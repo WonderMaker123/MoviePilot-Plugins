@@ -215,12 +215,13 @@ class DailyReleasePush(_PluginBase):
             item_mmdd = self.convert_to_mmdd(item.date)
             if item_mmdd == today_mmdd:
                 self.post_message(
-                    title=f"【今日上映】{item.title.upper()} ({item.english_title})",
+                    title=f"【今日上映】",
                     text=(
-                        f"*日期*: {item.date}\n"
-                        f"*国家*: {item.country}\n"
-                        f"*类型*: {', '.join(item.genres)}\n"
-                        f"*介绍*: {item.description}\n"
+                        f"名称: {item.title.upper()} ({item.english_title})\n"
+                        f"日期: {item.date}\n"
+                        f"国家: {item.country}\n"
+                        f"类型: {', '.join(item.genres)}\n"
+                        f"介绍: {item.description}\n"
                     ),
                     image=item.poster_url
                 )

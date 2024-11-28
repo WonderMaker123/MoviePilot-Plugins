@@ -10,6 +10,9 @@ from app.core.config import settings
 from app.log import logger
 from app.plugins import _PluginBase
 from app.plugins.dailyreleasepush.parse import *
+from app.core.metainfo import MetaInfo
+from app.chain.media import MediaChain
+
 
 class DailyReleasePush(_PluginBase):
     # 插件名称
@@ -19,7 +22,7 @@ class DailyReleasePush(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.1.0"
+    plugin_version = "0.1.1"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -214,6 +217,13 @@ class DailyReleasePush(_PluginBase):
         for item in items_to_process:
             item_mmdd = self.convert_to_mmdd(item.date)
             if item_mmdd == today_mmdd:
+                metainfo = MetaInfo(item.english_title)
+                mediainfo = MediaChain().recognize_by_meta(metainfo)
+                if mediainfo:
+                  if mediainfo.poster_path:
+                    item.poster_url = mediainfo.poster_path
+                  if mediainfo.backdrop_path:
+                    item.poster_url = mediainfo.backdrop_path
                 self.post_message(
                     title=f"【今日上映】",
                     text=(

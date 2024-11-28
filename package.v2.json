@@ -2,7 +2,7 @@
     "DailyReleasePush": {
         "name": "当天上映推送",
         "description": "将每日上映的内容进行推送。",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "author": "plsy1",
         "level": 1,
         "history": {

@@ -22,7 +22,7 @@ class DailyReleasePush(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.1.1"
+    plugin_version = "0.1.2"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -217,13 +217,14 @@ class DailyReleasePush(_PluginBase):
         for item in items_to_process:
             item_mmdd = self.convert_to_mmdd(item.date)
             if item_mmdd == today_mmdd:
-                metainfo = MetaInfo(item.english_title)
-                mediainfo = MediaChain().recognize_by_meta(metainfo)
-                if mediainfo:
-                  if mediainfo.poster_path:
-                    item.poster_url = mediainfo.poster_path
-                  if mediainfo.backdrop_path:
-                    item.poster_url = mediainfo.backdrop_path
+                backdrop_or_poster = (
+                    self.get_background(MetaInfo(item.english_title)) or
+                    self.get_background(MetaInfo(item.title)) or
+                    self.get_poster(MetaInfo(item.english_title)) or
+                    self.get_poster(MetaInfo(item.title))
+                )
+                if backdrop_or_poster:
+                    item.poster_url = backdrop_or_poster
                 self.post_message(
                     title=f"【今日上映】",
                     text=(
@@ -242,7 +243,25 @@ class DailyReleasePush(_PluginBase):
         except ValueError as e:
             logger.error(f"日期转换错误")
 
-
+    def get_background(self,metainfo):
+        """
+        根据 MetaInfo 返回最佳的图片路径。
+        优先返回 backdrop_path，其次是 poster_path。
+        """
+        mediainfo = MediaChain().recognize_by_meta(metainfo)
+        if mediainfo and mediainfo.backdrop_path:
+            return mediainfo.backdrop_path
+        return None
+    
+    def get_poster(self,metainfo):
+        """
+        根据 MetaInfo 返回最佳的图片路径。
+        优先返回 backdrop_path，其次是 poster_path。
+        """
+        mediainfo = MediaChain().recognize_by_meta(metainfo)
+        if mediainfo and mediainfo.poster_path:
+            return mediainfo.poster_path
+        return None
     def stop_service(self):
         """
         停止服务

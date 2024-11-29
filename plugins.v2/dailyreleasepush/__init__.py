@@ -1,9 +1,9 @@
-
 import datetime
 import threading
 from typing import Any, List, Dict, Tuple
 
 import pytz
+import re
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from app.core.config import settings
@@ -22,7 +22,7 @@ class DailyReleasePush(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.1.2"
+    plugin_version = "0.1.3"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -206,62 +206,67 @@ class DailyReleasePush(_PluginBase):
         """
         today_mmdd = datetime.datetime.now().strftime("%m%d")
         items = parse_items(get_source())
-        if self._remove_noCover:
-            items_to_process = [
-                item
-                for item in items
-                if item.poster_url != "https://img.huo720.com/files/movie-default.gif"
-            ]
-        else:
-            items_to_process = items
-        for item in items_to_process:
+        for item in items:
             item_mmdd = self.convert_to_mmdd(item.date)
             if item_mmdd == today_mmdd:
+                mediainfo_raw = MediaChain().recognize_by_meta(MetaInfo(item.english_title))
+                mediainfo_zhs = MediaChain().recognize_by_meta(MetaInfo(item.title))
                 backdrop_or_poster = (
-                    self.get_background(MetaInfo(item.english_title)) or
-                    self.get_background(MetaInfo(item.title)) or
-                    self.get_poster(MetaInfo(item.english_title)) or
-                    self.get_poster(MetaInfo(item.title))
+                    self.get_background(mediainfo_raw)
+                    or self.get_background(mediainfo_zhs)
+                    or self.get_poster(mediainfo_raw)
+                    or self.get_poster(mediainfo_zhs)
+                )
+                overview = (
+                    self.get_overview(mediainfo_raw)
+                    or self.get_overview(mediainfo_zhs)
                 )
                 if backdrop_or_poster:
                     item.poster_url = backdrop_or_poster
+                if overview:
+                    item.description = overview
+                if self._remove_noCover and item.poster_url.startswith("https://img.huo720.com"):
+                    continue
                 self.post_message(
                     title=f"【今日上映】",
-                    text=(
-                        f"名称: {item.title.upper()} ({item.english_title})\n"
+                    text = (
+                        f"名称: {item.title} ({item.english_title})\n"
+                        f"类型: {item.category}\n"
                         f"日期: {item.date}\n"
                         f"国家: {item.country}\n"
-                        f"类型: {', '.join(item.genres)}\n"
-                        f"介绍: {item.description}\n"
+                        + (f"*类型*: {', '.join(item.genres)}\n" if item.genres else "")  # 加上+号来拼接
+                        + f"介绍: {self.clean_spaces(item.description)}\n"
                     ),
-                    image=item.poster_url
+                    image=item.poster_url,
                 )
-    def convert_to_mmdd(self,date_str):
+
+    def convert_to_mmdd(self, date_str):
         try:
             date_obj = datetime.datetime.strptime(date_str, "%m月%d日")
-            return date_obj.strftime("%m%d")  # 返回 MMDD 格式
+            return date_obj.strftime("%m%d") 
         except ValueError as e:
             logger.error(f"日期转换错误")
 
-    def get_background(self,metainfo):
-        """
-        根据 MetaInfo 返回最佳的图片路径。
-        优先返回 backdrop_path，其次是 poster_path。
-        """
-        mediainfo = MediaChain().recognize_by_meta(metainfo)
+    def get_background(self, mediainfo):
         if mediainfo and mediainfo.backdrop_path:
             return mediainfo.backdrop_path
         return None
-    
-    def get_poster(self,metainfo):
-        """
-        根据 MetaInfo 返回最佳的图片路径。
-        优先返回 backdrop_path，其次是 poster_path。
-        """
-        mediainfo = MediaChain().recognize_by_meta(metainfo)
+
+    def get_poster(self, mediainfo):
         if mediainfo and mediainfo.poster_path:
             return mediainfo.poster_path
         return None
+    
+    def get_overview(self, mediainfo):
+        if mediainfo and mediainfo.overview:
+            return mediainfo.overview
+        return None
+    
+    def clean_spaces(self,text):
+        text = text.strip()
+        text = re.sub(r'\s+', ' ', text)
+        return text
+
     def stop_service(self):
         """
         停止服务

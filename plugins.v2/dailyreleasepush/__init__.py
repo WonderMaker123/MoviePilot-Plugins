@@ -22,7 +22,7 @@ class DailyReleasePush(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.1.3"
+    plugin_version = "0.1.4"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -234,8 +234,8 @@ class DailyReleasePush(_PluginBase):
                         f"类型: {item.category}\n"
                         f"日期: {item.date}\n"
                         f"国家: {item.country}\n"
-                        + (f"类型: {', '.join(item.genres)}\n" if item.genres else "")  # 加上+号来拼接
-                        + f"介绍: {self.clean_spaces(item.description)}\n"
+                        + (f"标签: {', '.join(item.genres)}\n" if item.genres else "")  # 加上+号来拼接
+                        + f"简介: {self.clean_spaces(item.description)}\n"
                     ),
                     image=item.poster_url,
                 )

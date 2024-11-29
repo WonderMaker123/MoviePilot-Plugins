@@ -234,7 +234,7 @@ class DailyReleasePush(_PluginBase):
                         f"类型: {item.category}\n"
                         f"日期: {item.date}\n"
                         f"国家: {item.country}\n"
-                        + (f"*类型*: {', '.join(item.genres)}\n" if item.genres else "")  # 加上+号来拼接
+                        + (f"类型: {', '.join(item.genres)}\n" if item.genres else "")  # 加上+号来拼接
                         + f"介绍: {self.clean_spaces(item.description)}\n"
                     ),
                     image=item.poster_url,

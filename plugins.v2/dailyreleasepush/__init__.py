@@ -263,6 +263,9 @@ class DailyReleasePush(_PluginBase):
             ):
                 continue
 
+            if item["poster_url"].startswith("https://img.huo720.com"):
+                continue
+
             total_value = sum(self._push_category)
 
             if (total_value == 1 and item.get("category") == "电影") or (

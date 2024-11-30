@@ -11,7 +11,8 @@ from app.log import logger
 from app.plugins import _PluginBase
 from app.core.metainfo import MetaInfo
 from app.chain.media import MediaChain
-
+from app.utils.http import RequestUtils
+from bs4 import BeautifulSoup
 
 class DailyReleasePush(_PluginBase):
     # 插件名称

@@ -23,7 +23,7 @@ class DailyReleasePush(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.3.3"
+    plugin_version = "0.3.4"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -172,7 +172,7 @@ class DailyReleasePush(_PluginBase):
                                         "component": "VSwitch",
                                         "props": {
                                             "model": "remove_noCover",
-                                            "label": "去除无封面条目",
+                                            "label": "只返回横向背景图",
                                         },
                                     }
                                 ],
@@ -240,8 +240,9 @@ class DailyReleasePush(_PluginBase):
             mediainfo_zhs = MediaChain().recognize_by_meta(MetaInfo(item.get("title")))
 
             ## 识别正确替换
+            image_type = ""
             if self.isDateEqual(mediainfo_raw) and self.isDateEqual(mediainfo_zhs):
-                backdrop_or_poster = (
+                backdrop_or_poster, image_type = (
                     self.get_background(mediainfo_raw)
                     or self.get_background(mediainfo_zhs)
                     or self.get_poster(mediainfo_raw)
@@ -255,8 +256,10 @@ class DailyReleasePush(_PluginBase):
                 if overview:
                     item["description"] = overview
 
-            if self._remove_noCover and item["poster_url"].startswith(
-                "https://img.huo720.com"
+            if self._remove_noCover and (
+                item["poster_url"].startswith("https://img.huo720.com")
+                or item["poster_url"].startswith("https://m.media-amazon.com")
+                or image_type == "poster"
             ):
                 continue
 
@@ -293,13 +296,13 @@ class DailyReleasePush(_PluginBase):
 
     def get_background(self, mediainfo):
         if mediainfo and mediainfo.backdrop_path:
-            return mediainfo.backdrop_path
-        return None
+            return mediainfo.backdrop_path, "background"
+        return None, None
 
     def get_poster(self, mediainfo):
         if mediainfo and mediainfo.poster_path:
-            return mediainfo.poster_path
-        return None
+            return mediainfo.poster_path, "poster"
+        return None, None
 
     def get_overview(self, mediainfo):
         if mediainfo and mediainfo.overview:

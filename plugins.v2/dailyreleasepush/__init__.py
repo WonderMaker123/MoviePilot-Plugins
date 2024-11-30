@@ -1,7 +1,7 @@
 import datetime
 import threading
 from typing import Any, List, Dict, Tuple
-
+import json
 import pytz
 import re
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -9,7 +9,6 @@ from apscheduler.triggers.cron import CronTrigger
 from app.core.config import settings
 from app.log import logger
 from app.plugins import _PluginBase
-from app.plugins.dailyreleasepush.parse import *
 from app.core.metainfo import MetaInfo
 from app.chain.media import MediaChain
 
@@ -22,7 +21,7 @@ class DailyReleasePush(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.2.0"
+    plugin_version = "0.3.0"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -230,15 +229,16 @@ class DailyReleasePush(_PluginBase):
         """
         获取当日上映的剧集信息，推送消息
         """
-        today_mmdd = datetime.datetime.now().strftime("%m%d")
-        items = parse_items(get_source())
+        items = self.get_huoxing_items()
+
         for item in items:
-            item_mmdd = self.convert_to_mmdd(item.date)
-            if item_mmdd == today_mmdd:
-                mediainfo_raw = MediaChain().recognize_by_meta(
-                    MetaInfo(item.english_title)
-                )
-                mediainfo_zhs = MediaChain().recognize_by_meta(MetaInfo(item.title))
+            mediainfo_raw = MediaChain().recognize_by_meta(
+                MetaInfo(item.get("english_title"))
+            )
+            mediainfo_zhs = MediaChain().recognize_by_meta(MetaInfo(item.get("title")))
+
+            ## 识别正确替换
+            if self.isDateEqual(mediainfo_raw) and self.isDateEqual(mediainfo_zhs):
                 backdrop_or_poster = (
                     self.get_background(mediainfo_raw)
                     or self.get_background(mediainfo_zhs)
@@ -249,30 +249,38 @@ class DailyReleasePush(_PluginBase):
                     mediainfo_zhs
                 )
                 if backdrop_or_poster:
-                    item.poster_url = backdrop_or_poster
+                    item["poster_url"] = backdrop_or_poster
                 if overview:
-                    item.description = overview
-                if self._remove_noCover and item.poster_url.startswith(
-                    "https://img.huo720.com"
-                ):
-                    continue
-                total_value = sum(self._push_category)
-                if (total_value == 1 and item.category == "电影") or (
-                    total_value == 2 and item.category == "电视"
-                ):
-                    continue
-                self.post_message(
-                    title=f"【今日上映】",
-                    text=(
-                        f"名称: {item.title} ({item.english_title})\n"
-                        f"类型: {item.category}\n"
-                        f"日期: {item.date}\n"
-                        f"国家: {item.country}\n"
-                        + (f"标签: {', '.join(item.genres)}\n" if item.genres else "")
-                        + f"简介: {self.clean_spaces(item.description)}\n"
-                    ),
-                    image=item.poster_url,
-                )
+                    item["description"] = overview
+
+            if self._remove_noCover and item["poster_url"].startswith(
+                "https://img.huo720.com"
+            ):
+                continue
+
+            total_value = sum(self._push_category)
+
+            if (total_value == 1 and item.get("category") == "电影") or (
+                total_value == 2 and item.get("category") == "电视"
+            ):
+                continue
+
+            self.post_message(
+                title="【今日上映】",
+                text=(
+                    f"名称: {item.get('title', '')} ({item.get('english_title', '')})\n"
+                    f"类型: {item.get('category', '')}\n"
+                    f"日期: {item.get('date', '')}\n"
+                    f"国家: {item.get('country', '')}\n"
+                    + (
+                        f"标签: {', '.join(item.get('genres', []))}\n"
+                        if item.get("genres")
+                        else ""
+                    )
+                    + f"简介: {self.clean_spaces(item.get('description'))}\n"
+                ),
+                image=item.get("poster_url"),
+            )
 
     def convert_to_mmdd(self, date_str):
         try:
@@ -300,6 +308,30 @@ class DailyReleasePush(_PluginBase):
         text = text.strip()
         text = re.sub(r"\s+", " ", text)
         return text
+
+    def isDateEqual(self, mediainfo):
+        if not mediainfo:
+            return True
+        if mediainfo and mediainfo.release_date == datetime.datetime.now().strftime(
+            "%Y-%m-%d"
+        ):
+            return True
+        return False
+
+    def get_huoxing_items(self):
+        base = "https://plsy1.github.io/dailyrelease/data/huoxing"
+        date = datetime.datetime.now().strftime("%Y%m%d")
+        url = f"{base}/{date}.json"
+        try:
+            response_text = RequestUtils(
+                ua=settings.USER_AGENT if settings.USER_AGENT else None,
+                proxies=settings.PROXY if settings.PROXY else None,
+            ).get(url=url)
+            items = json.loads(response_text)
+            return items
+        except Exception as e:
+            logger.error(f"请求失败: {e}")
+            return None
 
     def stop_service(self):
         """

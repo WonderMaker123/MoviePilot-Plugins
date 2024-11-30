@@ -4,6 +4,7 @@ from typing import Any, List, Dict, Tuple
 import json
 import pytz
 import re
+from bs4 import BeautifulSoup
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from app.core.config import settings
@@ -12,7 +13,7 @@ from app.plugins import _PluginBase
 from app.core.metainfo import MetaInfo
 from app.chain.media import MediaChain
 from app.utils.http import RequestUtils
-from bs4 import BeautifulSoup
+
 
 class DailyReleasePush(_PluginBase):
     # 插件名称
@@ -22,7 +23,7 @@ class DailyReleasePush(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.3.2"
+    plugin_version = "0.3.3"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页

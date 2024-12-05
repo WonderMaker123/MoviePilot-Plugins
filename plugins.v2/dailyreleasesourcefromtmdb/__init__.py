@@ -14,13 +14,13 @@ from app.utils.http import RequestUtils
 
 class dailyReleaseSourceFromTMDB(_PluginBase):
     # 插件名称
-    plugin_name = "今日上映剧集（TMDB数据源）"
+    plugin_name = "今日上映"
     # 插件描述
-    plugin_desc = "推送今日上映的剧集信息到消息通知工具"
+    plugin_desc = "推送TMDB今日上映的剧集信息到消息通知工具，只有剧集。"
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.1.1"
+    plugin_version = "0.1.2"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -128,8 +128,24 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             {"title": "爱奇艺", "value": 1330},
             {"title": "腾讯视频", "value": 2007},
             {"title": "芒果TV", "value": 1631},
+            {"title": "哔哩哔哩", "value": 1605},
             {"title": "CCTV-1", "value": 1363},
-            {"title": "CCTV-8", "value": 521}
+            {"title": "CCTV-8", "value": 521},
+            {"title": "Netflix", "value": 213},
+            {"title": "Apple TV+", "value": 2552},
+            {"title": "HBO", "value": 49},
+            {"title": "Disney+", "value": 2739},
+            {"title": "Amazon Prime Video", "value": 1024},
+            {"title": "NBC", "value": 6},
+            {"title": "CBS", "value": 16},
+            {"title": "ABC", "value": 2},
+            {"title": "NHK", "value": 2334},
+            {"title": "TBS", "value": 160},
+            {"title": "Fuji Television", "value": 3341},
+            {"title": "TV Asahi", "value": 103},
+            {"title": "TV Tokyo", "value": 98},
+            {"title": "Nippon TV", "value": 57}
+            
         ]
 
         return [
@@ -209,7 +225,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                                     "chips": True,
                                     "multiple": True,
                                     "model": "push_category",
-                                    "label": "处理类型",
+                                    "label": "发布平台",
                                     "items": option_category,
                                 },
                             }
@@ -232,7 +248,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
         """
         获取当日上映的剧集信息，推送消息
         """
-        items = self.get_source()
+        items = self.get_series_source()
 
         for item in items:
             network_id = item.get("network_id")
@@ -250,11 +266,11 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             self.post_message(
                 title="【今日上映】",
                 text=(
-                    f"名称: {item.get('name', '')}\n"
+                    f"名称: {item.get('name') or item.get('original_name', '')}\n"
                     f"类型: {'剧集'}\n"
-                    f"日期: {item.get('first_air_date', '')}\n"
+                    f"语言: {item.get('original_language')}\n"
                     + (
-                        f"国家: {', '.join([str(origin_country) for origin_country in item.get('origin_country', [])])}\n"
+                        f"地区: {', '.join([str(origin_country) for origin_country in item.get('origin_country', [])])}\n"
                         if item.get("origin_country")
                         else ""
                     )
@@ -263,7 +279,8 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                         if item.get("genre_ids")
                         else ""
                     )
-                    + f"简介: {self.clean_spaces(item.get('overview'))}\n"
+                    #+ f"日期: {item.get('first_air_date', '')}\n"
+                    + (f"简介: {item.get('overview')}\n" if item.get('overview') else "")
                 ),
                 image=image_url,
             )
@@ -273,7 +290,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
         text = re.sub(r"\s+", " ", text)
         return text
 
-    def get_source(self):
+    def get_series_source(self):
         base = "https://plsy1.github.io/dailyrelease/data/tmdb/series"
         date = datetime.datetime.now().strftime("%Y%m%d")
         url = f"{base}/{date}.json"

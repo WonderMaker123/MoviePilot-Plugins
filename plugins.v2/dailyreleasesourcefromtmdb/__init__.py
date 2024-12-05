@@ -20,7 +20,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.2.0"
+    plugin_version = "0.2.1"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -112,7 +112,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             return [
                 {
                     "id": "dailyReleaseSourceFromTMDB",
-                    "name": "推送当日上映剧集信息",
+                    "name": "推送当日上映剧集信息（TMDB）",
                     "trigger": CronTrigger.from_crontab(self._cron),
                     "func": self.job,
                     "kwargs": {},

@@ -133,9 +133,13 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             {"title": "CCTV-8", "value": 521},
             {"title": "Netflix", "value": 213},
             {"title": "Apple TV+", "value": 2552},
-            {"title": "HBO", "value": 49},
             {"title": "Disney+", "value": 2739},
             {"title": "Amazon Prime Video", "value": 1024},
+            {"title": "HBO", "value": 49},
+            {"title": "Hulu", "value": 453},
+            {"title": "Peacock", "value": 3353},
+            {"title": "Paramount+", "value": 4330},
+            {"title": "Discovery", "value": 64},
             {"title": "NBC", "value": 6},
             {"title": "CBS", "value": 16},
             {"title": "ABC", "value": 2},
@@ -145,8 +149,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             {"title": "TV Asahi", "value": 103},
             {"title": "TV Tokyo", "value": 98},
             {"title": "Nippon TV", "value": 57},
-            {"title": "MBS", "value": 94}
-            
+            {"title": "MBS", "value": 94},
         ]
 
         return [
@@ -256,14 +259,14 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
 
             if network_id is not None and int(network_id) not in self._push_category:
                 continue
-            
+
             if self._remove_noCover == True and item.get("backdrop_path") is None:
                 continue
 
-            imgage_base = 'https://image.tmdb.org/t/p/w1280'
+            imgage_base = "https://image.tmdb.org/t/p/w1280"
             image_name = item.get("backdrop_path") or item.get("poster_path")
             image_url = imgage_base + image_name
-            
+
             self.post_message(
                 title="【今日上映】",
                 text=(
@@ -280,8 +283,12 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                         if item.get("genre_ids")
                         else ""
                     )
-                    #+ f"日期: {item.get('first_air_date', '')}\n"
-                    + (f"简介: {item.get('overview')}\n" if item.get('overview') else "")
+                    # + f"日期: {item.get('first_air_date', '')}\n"
+                    + (
+                        f"简介: {item.get('overview')}\n"
+                        if item.get("overview")
+                        else ""
+                    )
                 ),
                 image=image_url,
             )

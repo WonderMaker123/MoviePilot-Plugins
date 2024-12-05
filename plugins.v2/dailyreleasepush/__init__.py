@@ -23,7 +23,7 @@ class DailyReleasePush(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.3.5"
+    plugin_version = "0.3.6"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -263,7 +263,7 @@ class DailyReleasePush(_PluginBase):
             ):
                 continue
 
-            if item["poster_url"].startswith("https://img.huo720.com"):
+            if item["poster_url"].startswith("https://img.huo720.com/files/movie-default"):
                 continue
 
             total_value = sum(self._push_category)

@@ -20,7 +20,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.1.0"
+    plugin_version = "0.1.1"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -235,11 +235,12 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
         items = self.get_source()
 
         for item in items:
+            network_id = item.get("network_id")
 
-
-            valid_network_ids = {category["value"] for category in self.option_category}
+            if network_id is not None and int(network_id) not in self._push_category:
+                continue
             
-            if item.get("network_id") not in valid_network_ids:
+            if self._remove_noCover == True and item.get("backdrop_path") is None:
                 continue
 
             imgage_base = 'https://image.tmdb.org/t/p/w1280'
@@ -249,12 +250,16 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             self.post_message(
                 title="【今日上映】",
                 text=(
-                    f"名称: {item.get('name', '')} ({item.get('original_name', '')})\n"
+                    f"名称: {item.get('name', '')}\n"
                     f"类型: {'剧集'}\n"
                     f"日期: {item.get('first_air_date', '')}\n"
-                    f"国家: {item.get('origin_country', '')}\n"
                     + (
-                        f"标签: {', '.join(item.get('genre_ids', []))}\n"
+                        f"国家: {', '.join([str(origin_country) for origin_country in item.get('origin_country', [])])}\n"
+                        if item.get("origin_country")
+                        else ""
+                    )
+                    + (
+                        f"标签: {', '.join([str(genre_id) for genre_id in item.get('genre_ids', [])])}\n"
                         if item.get("genre_ids")
                         else ""
                     )
@@ -269,7 +274,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
         return text
 
     def get_source(self):
-        base = "https://plsy1.github.io/dailyrelease/data/tmdb/tv"
+        base = "https://plsy1.github.io/dailyrelease/data/tmdb/series"
         date = datetime.datetime.now().strftime("%Y%m%d")
         url = f"{base}/{date}.json"
         try:

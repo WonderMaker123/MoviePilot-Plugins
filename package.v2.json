@@ -12,8 +12,8 @@
         }
     },
     "dailyReleaseSourceFromTMDB": {
-        "name": "今日上映剧集（TMDB数据源）",
-        "description": "将每日上映的内容进行推送。",
+        "name": "今日上映",
+        "description": "推送TMDB今日上映的剧集信息到消息通知工具，只有剧集。",
         "version": "0.1.0",
         "author": "plsy1",
         "level": 1,

@@ -20,7 +20,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.1.2"
+    plugin_version = "0.1.3"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -144,7 +144,8 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             {"title": "Fuji Television", "value": 3341},
             {"title": "TV Asahi", "value": 103},
             {"title": "TV Tokyo", "value": 98},
-            {"title": "Nippon TV", "value": 57}
+            {"title": "Nippon TV", "value": 57},
+            {"title": "MBS", "value": 94}
             
         ]
 

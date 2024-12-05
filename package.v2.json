@@ -10,5 +10,15 @@
             "v0.2.0": "现在可以选择推送剧集/电影",
             "v0.1.0": "测试版本"
         }
+    },
+    "dailyReleaseSourceFromTMDB": {
+        "name": "今日上映剧集（TMDB数据源）",
+        "description": "将每日上映的内容进行推送。",
+        "version": "0.1.0",
+        "author": "plsy1",
+        "level": 1,
+        "history": {
+            "v0.1.0": "测试版本"
+        }
     }
 }

@@ -20,7 +20,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.1.3"
+    plugin_version = "0.2.0"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页

@@ -14,11 +14,8 @@
     "dailyReleaseSourceFromTMDB": {
         "name": "今日上映",
         "description": "推送TMDB今日上映的剧集信息到消息通知工具，只有剧集。",
-        "version": "0.1.3",
+        "version": "0.2.0",
         "author": "plsy1",
-        "level": 1,
-        "history": {
-            "v0.1.0": "测试版本"
-        }
+        "level": 1
     }
 }

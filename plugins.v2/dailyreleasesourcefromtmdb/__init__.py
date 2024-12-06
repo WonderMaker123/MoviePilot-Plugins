@@ -20,7 +20,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.2.1"
+    plugin_version = "0.2.2"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -136,6 +136,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             {"title": "Disney+", "value": 2739},
             {"title": "Amazon Prime Video", "value": 1024},
             {"title": "HBO", "value": 49},
+            {"title": "Max", "value": 6783},
             {"title": "Hulu", "value": 453},
             {"title": "Peacock", "value": 3353},
             {"title": "Paramount+", "value": 4330},

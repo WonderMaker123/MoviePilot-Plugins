@@ -16,7 +16,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     # 插件名称
     plugin_name = "今日上映"
     # 插件描述
-    plugin_desc = "推送TMDB今日上映的剧集信息到消息通知工具，只有剧集。"
+    plugin_desc = "推送TMDB今日上映的剧集信息到消息通知工具。"
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本

@@ -20,7 +20,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.2.2"
+    plugin_version = "0.3.0"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -41,7 +41,9 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     _onlyonce = False
     _cron = None
     _remove_noCover = False
+    _movie_Chinese_Title = False
     _push_category: list = []
+    _push_movie: list = []
 
     def init_plugin(self, config: dict = None):
         if config:
@@ -49,8 +51,9 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             self._onlyonce = config.get("onlyonce")
             self._cron = config.get("cron")
             self._remove_noCover = config.get("remove_noCover") or False
+            self._movie_Chinese_Title = config.get("movie_Chinese_Title") or False
             self._push_category = config.get("push_category") or []
-
+            self._push_movie = config.get("push_movie") or []
         # 停止现有任务
         self.stop_service()
 
@@ -83,7 +86,9 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                 "onlyonce": self._onlyonce,
                 "cron": self._cron,
                 "remove_noCover": self._remove_noCover,
+                "movie_Chinese_Title": self._movie_Chinese_Title,
                 "push_category": self._push_category,
+                "push_movie" : self._push_movie,
             }
         )
 
@@ -152,6 +157,21 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             {"title": "Nippon TV", "value": 57},
             {"title": "MBS", "value": 94},
         ]
+        
+        movie_language = [
+            {"title": "汉语", "value": "zh"},
+            {"title": "英语", "value": "en"},
+            {"title": "日语", "value": "ja"},
+            {"title": "韩语", "value": "ko"},
+            {"title": "泰语", "value": "th"},
+            {"title": "印地", "value": "hi"},
+            {"title": "德语", "value": "de"},
+            {"title": "法语", "value": "fr"},
+            {"title": "西语", "value": "es"},
+            {"title": "葡语", "value": "pt"},
+            {"title": "俄语", "value": "ru"},
+            {"title": "意语", "value": "it"},
+        ]
 
         return [
             {
@@ -194,7 +214,20 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                                         "component": "VSwitch",
                                         "props": {
                                             "model": "remove_noCover",
-                                            "label": "只返回横向背景图",
+                                            "label": "仅返回横向背景图",
+                                        },
+                                    }
+                                ],
+                            },
+                            {
+                                "component": "VCol",
+                                "props": {"cols": 12, "md": 4},
+                                "content": [
+                                    {
+                                        "component": "VSwitch",
+                                        "props": {
+                                            "model": "movie_Chinese_Title",
+                                            "label": "仅返回中文标题电影",
                                         },
                                     }
                                 ],
@@ -208,7 +241,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                 "content": [
                     {
                         "component": "VCol",
-                        "props": {"cols": 12, "md": 6},
+                        "props": {"cols": 12, "md": 4},
                         "content": [
                             {
                                 "component": "VTextField",
@@ -222,7 +255,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                     },
                     {
                         "component": "VCol",
-                        "props": {"cols": 12, "md": 6},
+                        "props": {"cols": 12, "md": 4},
                         "content": [
                             {
                                 "component": "VSelect",
@@ -230,8 +263,24 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                                     "chips": True,
                                     "multiple": True,
                                     "model": "push_category",
-                                    "label": "发布平台",
+                                    "label": "剧集平台",
                                     "items": option_category,
+                                },
+                            }
+                        ],
+                    },
+                    {
+                        "component": "VCol",
+                        "props": {"cols": 12, "md": 4},
+                        "content": [
+                            {
+                                "component": "VSelect",
+                                "props": {
+                                    "chips": True,
+                                    "multiple": True,
+                                    "model": "push_movie",
+                                    "label": "电影语言",
+                                    "items": movie_language,
                                 },
                             }
                         ],
@@ -243,7 +292,9 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             "onlyonce": False,
             "cron": "",
             "remove_noCover": True,
+            "movie_Chinese_Title": True,
             "push_category": [],
+            "push_movie": [],
         }
 
     def get_page(self) -> List[dict]:
@@ -293,6 +344,44 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                 ),
                 image=image_url,
             )
+            
+        items = self.get_movies_source()
+        for item in items:
+            original_language = item.get("original_language")
+            
+            if self._movie_Chinese_Title == True and item.get("original_title") == item.get("title") and original_language != "zh":
+                continue
+
+            if original_language is not None and original_language not in self._push_movie:
+                continue
+
+            if self._remove_noCover == True and item.get("backdrop_path") is None:
+                continue
+
+            imgage_base = "https://image.tmdb.org/t/p/w1280"
+            image_name = item.get("backdrop_path") or item.get("poster_path")
+            image_url = imgage_base + image_name
+            
+            self.post_message(
+                title="【今日上映】",
+                text=(
+                    f"名称: {item.get('title') or item.get('original_title', '')}\n"
+                    f"类型: {'电影'}\n"
+                    f"语言: {item.get('original_language_zh')}\n"
+                    + (
+                        f"标签: {', '.join([str(genre_id) for genre_id in item.get('genre_ids', [])])}\n"
+                        if item.get("genre_ids")
+                        else ""
+                    )
+                    # + f"日期: {item.get('first_air_date', '')}\n"
+                    + (
+                        f"简介: {item.get('overview')}\n"
+                        if item.get("overview")
+                        else ""
+                    )
+                ),
+                image=image_url,
+            )
 
     def clean_spaces(self, text):
         text = text.strip()
@@ -301,6 +390,22 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
 
     def get_series_source(self):
         base = "https://plsy1.github.io/dailyrelease/data/tmdb/series"
+        date = datetime.datetime.now().strftime("%Y%m%d")
+        url = f"{base}/{date}.json"
+        try:
+            response_text = RequestUtils(
+                ua=settings.USER_AGENT if settings.USER_AGENT else None,
+                proxies=settings.PROXY if settings.PROXY else None,
+            ).get(url=url)
+            items = json.loads(response_text)
+            return items
+        except Exception as e:
+            logger.error(f"请求失败: {e}")
+            return None
+        
+        
+    def get_movies_source(self):
+        base = "https://plsy1.github.io/dailyrelease/data/tmdb/movies"
         date = datetime.datetime.now().strftime("%Y%m%d")
         url = f"{base}/{date}.json"
         try:

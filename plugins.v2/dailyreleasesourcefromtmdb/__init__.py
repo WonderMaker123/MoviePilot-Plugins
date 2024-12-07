@@ -20,7 +20,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.3.0"
+    plugin_version = "0.3.1"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -305,83 +305,87 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
         获取当日上映的剧集信息，推送消息
         """
         items = self.get_series_source()
+        if items:
+            for item in items:
+                network_id = item.get("network_id")
 
-        for item in items:
-            network_id = item.get("network_id")
+                if network_id is not None and int(network_id) not in self._push_category:
+                    continue
 
-            if network_id is not None and int(network_id) not in self._push_category:
-                continue
+                if self._remove_noCover == True and item.get("backdrop_path") is None:
+                    continue
 
-            if self._remove_noCover == True and item.get("backdrop_path") is None:
-                continue
+                imgage_base = "https://image.tmdb.org/t/p/w1280"
+                image_name = item.get("backdrop_path") or item.get("poster_path")
+                image_url = imgage_base + image_name
 
-            imgage_base = "https://image.tmdb.org/t/p/w1280"
-            image_name = item.get("backdrop_path") or item.get("poster_path")
-            image_url = imgage_base + image_name
-
-            self.post_message(
-                title="【今日上映】",
-                text=(
-                    f"名称: {item.get('name') or item.get('original_name', '')}\n"
-                    f"类型: {'剧集'}\n"
-                    f"语言: {item.get('original_language')}\n"
-                    + (
-                        f"地区: {', '.join([str(origin_country) for origin_country in item.get('origin_country', [])])}\n"
-                        if item.get("origin_country")
-                        else ""
-                    )
-                    + (
-                        f"标签: {', '.join([str(genre_id) for genre_id in item.get('genre_ids', [])])}\n"
-                        if item.get("genre_ids")
-                        else ""
-                    )
-                    # + f"日期: {item.get('first_air_date', '')}\n"
-                    + (
-                        f"简介: {item.get('overview')}\n"
-                        if item.get("overview")
-                        else ""
-                    )
-                ),
-                image=image_url,
-            )
-            
+                self.post_message(
+                    title="【今日上映】",
+                    text=(
+                        f"名称: {item.get('name') or item.get('original_name', '')}\n"
+                        f"类型: {'剧集'}\n"
+                        f"语言: {item.get('original_language')}\n"
+                        + (
+                            f"地区: {', '.join([str(origin_country) for origin_country in item.get('origin_country', [])])}\n"
+                            if item.get("origin_country")
+                            else ""
+                        )
+                        + (
+                            f"标签: {', '.join([str(genre_id) for genre_id in item.get('genre_ids', [])])}\n"
+                            if item.get("genre_ids")
+                            else ""
+                        )
+                        # + f"日期: {item.get('first_air_date', '')}\n"
+                        + (
+                            f"简介: {item.get('overview')}\n"
+                            if item.get("overview")
+                            else ""
+                        )
+                    ),
+                    image=image_url,
+                )
+        else:
+            logger.info("未获取到剧集数据，跳过处理")
         items = self.get_movies_source()
-        for item in items:
-            original_language = item.get("original_language")
-            
-            if self._movie_Chinese_Title == True and item.get("original_title") == item.get("title") and original_language != "zh":
-                continue
+        if items:
+            for item in items:
+                original_language = item.get("original_language")
+                
+                if self._movie_Chinese_Title == True and item.get("original_title") == item.get("title") and original_language != "zh":
+                    continue
 
-            if original_language is not None and original_language not in self._push_movie:
-                continue
+                if original_language is not None and original_language not in self._push_movie:
+                    continue
 
-            if self._remove_noCover == True and item.get("backdrop_path") is None:
-                continue
+                if self._remove_noCover == True and item.get("backdrop_path") is None:
+                    continue
 
-            imgage_base = "https://image.tmdb.org/t/p/w1280"
-            image_name = item.get("backdrop_path") or item.get("poster_path")
-            image_url = imgage_base + image_name
-            
-            self.post_message(
-                title="【今日上映】",
-                text=(
-                    f"名称: {item.get('title') or item.get('original_title', '')}\n"
-                    f"类型: {'电影'}\n"
-                    f"语言: {item.get('original_language_zh')}\n"
-                    + (
-                        f"标签: {', '.join([str(genre_id) for genre_id in item.get('genre_ids', [])])}\n"
-                        if item.get("genre_ids")
-                        else ""
-                    )
-                    # + f"日期: {item.get('first_air_date', '')}\n"
-                    + (
-                        f"简介: {item.get('overview')}\n"
-                        if item.get("overview")
-                        else ""
-                    )
-                ),
-                image=image_url,
-            )
+                imgage_base = "https://image.tmdb.org/t/p/w1280"
+                image_name = item.get("backdrop_path") or item.get("poster_path")
+                image_url = imgage_base + image_name
+                
+                self.post_message(
+                    title="【今日上映】",
+                    text=(
+                        f"名称: {item.get('title') or item.get('original_title', '')}\n"
+                        f"类型: {'电影'}\n"
+                        f"语言: {item.get('original_language_zh')}\n"
+                        + (
+                            f"标签: {', '.join([str(genre_id) for genre_id in item.get('genre_ids', [])])}\n"
+                            if item.get("genre_ids")
+                            else ""
+                        )
+                        # + f"日期: {item.get('first_air_date', '')}\n"
+                        + (
+                            f"简介: {item.get('overview')}\n"
+                            if item.get("overview")
+                            else ""
+                        )
+                    ),
+                    image=image_url,
+                )
+        else:
+            logger.info("未获取到电影数据，跳过处理")
 
     def clean_spaces(self, text):
         text = text.strip()

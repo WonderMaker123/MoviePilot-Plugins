@@ -20,7 +20,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.3.1"
+    plugin_version = "0.3.2"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -317,6 +317,8 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
 
                 imgage_base = "https://image.tmdb.org/t/p/w1280"
                 image_name = item.get("backdrop_path") or item.get("poster_path")
+                if not image_name:
+                    continue
                 image_url = imgage_base + image_name
 
                 self.post_message(
@@ -362,6 +364,8 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
 
                 imgage_base = "https://image.tmdb.org/t/p/w1280"
                 image_name = item.get("backdrop_path") or item.get("poster_path")
+                if not image_name:
+                    continue
                 image_url = imgage_base + image_name
                 
                 self.post_message(

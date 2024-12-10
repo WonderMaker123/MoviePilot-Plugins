@@ -20,7 +20,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.3.5"
+    plugin_version = "0.3.6"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -44,8 +44,10 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     _removeNoCoverMovies = False
     _series_Chinese_Title = False
     _movie_Chinese_Title = False
-    _push_series: list = []
-    _push_movie: list = []
+    _push_series_languages: list = []
+    _push_movies_languages: list = []
+    _pass_series_genre: list = []
+    _pass_movies_genre: list = []
 
     def init_plugin(self, config: dict = None):
         if config:
@@ -56,8 +58,10 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             self._removeNoCoverMovies = config.get("removeNoCoverMovies") or False
             self._movie_Chinese_Title = config.get("movie_Chinese_Title") or False
             self._series_Chinese_Title = config.get("series_Chinese_Title") or False
-            self._push_series = config.get("push_series") or []
-            self._push_movie = config.get("push_movie") or []
+            self._push_series_languages = config.get("push_series_languages") or []
+            self._push_movies_languages = config.get("push_movies_languages") or []
+            self._pass_series_genre = config.get("pass_series_genre") or []
+            self._pass_movies_genre = config.get("pass_movies_genre") or []
         # 停止现有任务
         self.stop_service()
 
@@ -93,8 +97,10 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                 "removeNoCoverMovies": self._removeNoCoverMovies,
                 "movie_Chinese_Title": self._movie_Chinese_Title,
                 "series_Chinese_Title": self._series_Chinese_Title,
-                "push_series": self._push_series,
-                "push_movie" : self._push_movie,
+                "push_series_languages": self._push_series_languages,
+                "push_movies_languages" : self._push_movies_languages,
+                "pass_series_genre" : self._pass_series_genre,
+                "pass_movies_genre" : self._pass_movies_genre,
             }
         )
 
@@ -174,6 +180,58 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             {"title": "瑞典语", "value": "sv"},
             {"title": "挪威语", "value": "no"},
             {"title": "芬兰语", "value": "fi"},
+        ]
+        
+        pass_series_genre = [
+            {"title": "动作", "value": 28},
+            {"title": "冒险", "value": 12},
+            {"title": "动画", "value": 16},
+            {"title": "喜剧", "value": 35},
+            {"title": "犯罪", "value": 80},
+            {"title": "纪录", "value": 99},
+            {"title": "剧情", "value": 18},
+            {"title": "家庭", "value": 10751},
+            {"title": "奇幻", "value": 14},
+            {"title": "历史", "value": 36},
+            {"title": "恐怖", "value": 27},
+            {"title": "音乐", "value": 10402},
+            {"title": "悬疑", "value": 9648},
+            {"title": "爱情", "value": 10749},
+            {"title": "科幻", "value": 878},
+            {"title": "电视电影", "value": 10770},
+            {"title": "惊悚", "value": 53},
+            {"title": "战争", "value": 10752},
+            {"title": "西部", "value": 37},
+            {"title": "动作与冒险", "value": 10759},
+            {"title": "儿童", "value": 10762},
+            {"title": "新闻", "value": 10763},
+            {"title": "真人秀", "value": 10764},
+            {"title": "科幻与奇幻", "value": 10765},
+            {"title": "肥皂剧", "value": 10766},
+            {"title": "脱口秀", "value": 10767},
+            {"title": "战争与政治", "value": 10768},
+        ]
+        
+        pass_movies_genre = [
+            {"title": "动作", "value": 28},
+            {"title": "冒险", "value": 12},
+            {"title": "动画", "value": 16},
+            {"title": "喜剧", "value": 35},
+            {"title": "犯罪", "value": 80},
+            {"title": "纪录", "value": 99},
+            {"title": "剧情", "value": 18},
+            {"title": "家庭", "value": 10751},
+            {"title": "奇幻", "value": 14},
+            {"title": "历史", "value": 36},
+            {"title": "恐怖", "value": 27},
+            {"title": "音乐", "value": 10402},
+            {"title": "悬疑", "value": 9648},
+            {"title": "爱情", "value": 10749},
+            {"title": "科幻", "value": 878},
+            {"title": "电视电影", "value": 10770},
+            {"title": "惊悚", "value": 53},
+            {"title": "战争", "value": 10752},
+            {"title": "西部", "value": 37},
         ]
 
         return [
@@ -265,7 +323,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                     }
                 ],
             },
-                        {
+            {
                 "component": "VRow",
                 "content": [
                     {
@@ -296,7 +354,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                                 "props": {
                                     "chips": True,
                                     "multiple": True,
-                                    "model": "push_series",
+                                    "model": "push_series_languages",
                                     "label": "剧集语言",
                                     "items": series_language,
                                 },
@@ -312,9 +370,46 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                                 "props": {
                                     "chips": True,
                                     "multiple": True,
-                                    "model": "push_movie",
+                                    "model": "push_movies_languages",
                                     "label": "电影语言",
                                     "items": movies_language,
+                                },
+                            }
+                        ],
+                    },
+                ],
+            },
+            {
+                "component": "VRow",
+                "content": [
+                    {
+                        "component": "VCol",
+                        "props": {"cols": 12, "md": 6},
+                        "content": [
+                            {
+                                "component": "VSelect",
+                                "props": {
+                                    "chips": True,
+                                    "multiple": True,
+                                    "model": "pass_series_genre",
+                                    "label": "排除剧集标签",
+                                    "items": pass_series_genre,
+                                },
+                            }
+                        ],
+                    },
+                    {
+                        "component": "VCol",
+                        "props": {"cols": 12, "md": 6},
+                        "content": [
+                            {
+                                "component": "VSelect",
+                                "props": {
+                                    "chips": True,
+                                    "multiple": True,
+                                    "model": "pass_movies_genre",
+                                    "label": "排除电影标签",
+                                    "items": pass_movies_genre,
                                 },
                             }
                         ],
@@ -329,8 +424,10 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             "removeNoCoverMovies": True,
             "movie_Chinese_Title": True,
             "series_Chinese_Title": True,
-            "push_series": [],
-            "push_movie": [],
+            "push_series_languages": [],
+            "push_movies_languages": [],
+            "pass_series_genre": [],
+            "pass_movies_genre": [],
         }
 
     def get_page(self) -> List[dict]:
@@ -345,7 +442,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             for item in items:
                 original_language = item.get("original_language")
 
-                if original_language is not None and original_language not in self._push_series:
+                if original_language is not None and original_language not in self._push_series_languages:
                     continue
 
                 if self._removeNoCoverSeries == True and item.get("backdrop_path") is None:
@@ -353,11 +450,13 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                 
                 if self._series_Chinese_Title == True and item.get("name") == item.get("original_name") and original_language != "zh":
                     continue
+                
+                if any(genre_id in self._pass_series_genre for genre_id in item.get('genre_ids', [])):
+                    continue
 
                 imgage_base = "https://image.tmdb.org/t/p/w1280"
                 image_name = item.get("backdrop_path") or item.get("poster_path")
                 if not image_name:
-                    logger.info("不含封面图，跳过处理",item.get("name"))
                     continue
                 image_url = imgage_base + image_name
 
@@ -373,8 +472,8 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                             else ""
                         )
                         + (
-                            f"标签: {', '.join([str(genre_id) for genre_id in item.get('genre_ids', [])])}\n"
-                            if item.get("genre_ids")
+                            f"标签: {', '.join([str(genre_id) for genre_id in item.get('genre_ids_zh', [])])}\n"
+                            if item.get("genre_ids_zh")
                             else ""
                         )
                         # + f"日期: {item.get('first_air_date', '')}\n"
@@ -397,16 +496,19 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                 if self._movie_Chinese_Title == True and item.get("original_title") == item.get("title") and original_language != "zh":
                     continue
 
-                if original_language is not None and original_language not in self._push_movie:
+                if original_language is not None and original_language not in self._push_movies_languages:
                     continue
 
                 if self._removeNoCoverMovies == True and item.get("backdrop_path") is None:
+                    continue
+                
+                if any(genre_id in self._pass_movies_genre for genre_id in item.get('genre_ids', [])):
                     continue
 
                 imgage_base = "https://image.tmdb.org/t/p/w1280"
                 image_name = item.get("backdrop_path") or item.get("poster_path")
                 if not image_name:
-                    logger.info("不含封面图，跳过处理",item.get("title"))
+                    logger.info("不含封面图，跳过处理：%s", item.get("name"))
                     continue
                 image_url = imgage_base + image_name
                 
@@ -417,8 +519,8 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                         f"类型: {'电影'}\n"
                         f"语言: {item.get('original_language_zh')}\n"
                         + (
-                            f"标签: {', '.join([str(genre_id) for genre_id in item.get('genre_ids', [])])}\n"
-                            if item.get("genre_ids")
+                            f"标签: {', '.join([str(genre_id) for genre_id in item.get('genre_ids_zh', [])])}\n"
+                            if item.get("genre_ids_zh")
                             else ""
                         )
                         # + f"日期: {item.get('first_air_date', '')}\n"

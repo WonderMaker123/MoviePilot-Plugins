@@ -20,7 +20,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     # 插件图标
     plugin_icon = "tmdb.svg"
     # 插件版本
-    plugin_version = "0.4.0"
+    plugin_version = "0.4.1"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -44,6 +44,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     _removeNoCoverMovies = False
     _series_Chinese_Title = False
     _movie_Chinese_Title = False
+    _push_No_Image_Item = False
     _push_series_languages: list = []
     _push_movies_languages: list = []
     _pass_series_genre: list = []
@@ -58,6 +59,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             self._removeNoCoverMovies = config.get("removeNoCoverMovies") or False
             self._movie_Chinese_Title = config.get("movie_Chinese_Title") or False
             self._series_Chinese_Title = config.get("series_Chinese_Title") or False
+            self._push_No_Image_Item = config.get("push_No_Image_Item") or False
             self._push_series_languages = config.get("push_series_languages") or []
             self._push_movies_languages = config.get("push_movies_languages") or []
             self._pass_series_genre = config.get("pass_series_genre") or []
@@ -99,6 +101,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                 "series_Chinese_Title": self._series_Chinese_Title,
                 "push_series_languages": self._push_series_languages,
                 "push_movies_languages" : self._push_movies_languages,
+                "push_No_Image_Item": self._push_No_Image_Item,
                 "pass_series_genre" : self._pass_series_genre,
                 "pass_movies_genre" : self._pass_movies_genre,
             }
@@ -313,8 +316,8 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                                     {
                                         "component": "VSwitch",
                                         "props": {
-                                            "model": "onlyonce",
-                                            "label": "立即运行一次",
+                                            "model": "push_No_Image_Item",
+                                            "label": "推送无图片条目",
                                         },
                                     }
                                 ],
@@ -336,6 +339,19 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                                     "model": "cron",
                                     "label": "服务执行周期",
                                     "placeholder": "5位cron表达式",
+                                },
+                            }
+                        ],
+                    },
+                    {
+                        "component": "VCol",
+                        "props": {"cols": 12, "md": 6},
+                        "content": [
+                            {
+                                "component": "VSwitch",
+                                "props": {
+                                    "model": "onlyonce",
+                                    "label": "立即运行一次",
                                 },
                             }
                         ],
@@ -424,6 +440,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             "removeNoCoverMovies": True,
             "movie_Chinese_Title": True,
             "series_Chinese_Title": True,
+            "push_No_Image_Item": True,
             "push_series_languages": [],
             "push_movies_languages": [],
             "pass_series_genre": [],
@@ -454,12 +471,15 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                 if any(genre_id in self._pass_series_genre for genre_id in item.get('genre_ids', [])):
                     continue
 
-                imgage_base = "https://image.tmdb.org/t/p/w1280"
+                image_base = "https://image.tmdb.org/t/p/w1280"
                 image_name = item.get("backdrop_path") or item.get("poster_path")
                 if not image_name:
-                    image_url = None
+                    if self._push_No_Image_Item:
+                        image_url = None
+                    else:
+                        continue
                 else:
-                    image_url = imgage_base + image_name
+                    image_url = image_base + image_name
 
                 self.post_message(
                     title="【今日上映】",
@@ -506,12 +526,15 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                 if any(genre_id in self._pass_movies_genre for genre_id in item.get('genre_ids', [])):
                     continue
 
-                imgage_base = "https://image.tmdb.org/t/p/w1280"
+                image_base = "https://image.tmdb.org/t/p/w1280"
                 image_name = item.get("backdrop_path") or item.get("poster_path")
                 if not image_name:
-                    image_url = None
+                    if self._push_No_Image_Item:
+                        image_url = None
+                    else:
+                        continue
                 else:
-                    image_url = imgage_base + image_name
+                    image_url = image_base + image_name
                 
                 self.post_message(
                     title="【今日上映】",

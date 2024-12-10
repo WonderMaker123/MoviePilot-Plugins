@@ -20,7 +20,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.3.3"
+    plugin_version = "0.3.4"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -135,7 +135,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
         拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
         """
         option_category = [
-            {"title": "优酷", "value": 97898},
+            {"title": "优酷", "value": 1419},
             {"title": "爱奇艺", "value": 1330},
             {"title": "腾讯视频", "value": 2007},
             {"title": "芒果TV", "value": 1631},
@@ -157,7 +157,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             {"title": "ABC", "value": 2},
             {"title": "NHK", "value": 2334},
             {"title": "TBS", "value": 160},
-            {"title": "Fuji Television", "value": 3341},
+            {"title": "Fuji TV", "value": 1},
             {"title": "TV Asahi", "value": 103},
             {"title": "TV Tokyo", "value": 98},
             {"title": "Nippon TV", "value": 57},

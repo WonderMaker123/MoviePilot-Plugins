@@ -18,9 +18,9 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     # 插件描述
     plugin_desc = "推送TMDB今日上映的剧集信息到消息通知工具。"
     # 插件图标
-    plugin_icon = "statistic.png"
+    plugin_icon = "tmdb.svg"
     # 插件版本
-    plugin_version = "0.3.6"
+    plugin_version = "0.4.0"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -457,8 +457,9 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                 imgage_base = "https://image.tmdb.org/t/p/w1280"
                 image_name = item.get("backdrop_path") or item.get("poster_path")
                 if not image_name:
-                    continue
-                image_url = imgage_base + image_name
+                    image_url = None
+                else:
+                    image_url = imgage_base + image_name
 
                 self.post_message(
                     title="【今日上映】",
@@ -508,9 +509,9 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                 imgage_base = "https://image.tmdb.org/t/p/w1280"
                 image_name = item.get("backdrop_path") or item.get("poster_path")
                 if not image_name:
-                    logger.info("不含封面图，跳过处理：%s", item.get("name"))
-                    continue
-                image_url = imgage_base + image_name
+                    image_url = None
+                else:
+                    image_url = imgage_base + image_name
                 
                 self.post_message(
                     title="【今日上映】",

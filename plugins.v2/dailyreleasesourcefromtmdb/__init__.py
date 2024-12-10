@@ -20,7 +20,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.3.4"
+    plugin_version = "0.3.5"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -44,7 +44,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     _removeNoCoverMovies = False
     _series_Chinese_Title = False
     _movie_Chinese_Title = False
-    _push_category: list = []
+    _push_series: list = []
     _push_movie: list = []
 
     def init_plugin(self, config: dict = None):
@@ -56,7 +56,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             self._removeNoCoverMovies = config.get("removeNoCoverMovies") or False
             self._movie_Chinese_Title = config.get("movie_Chinese_Title") or False
             self._series_Chinese_Title = config.get("series_Chinese_Title") or False
-            self._push_category = config.get("push_category") or []
+            self._push_series = config.get("push_series") or []
             self._push_movie = config.get("push_movie") or []
         # 停止现有任务
         self.stop_service()
@@ -93,7 +93,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                 "removeNoCoverMovies": self._removeNoCoverMovies,
                 "movie_Chinese_Title": self._movie_Chinese_Title,
                 "series_Chinese_Title": self._series_Chinese_Title,
-                "push_category": self._push_category,
+                "push_series": self._push_series,
                 "push_movie" : self._push_movie,
             }
         )
@@ -134,49 +134,46 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
         """
         拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
         """
-        option_category = [
-            {"title": "优酷", "value": 1419},
-            {"title": "爱奇艺", "value": 1330},
-            {"title": "腾讯视频", "value": 2007},
-            {"title": "芒果TV", "value": 1631},
-            {"title": "哔哩哔哩", "value": 1605},
-            {"title": "CCTV-1", "value": 1363},
-            {"title": "CCTV-8", "value": 521},
-            {"title": "Netflix", "value": 213},
-            {"title": "Apple TV+", "value": 2552},
-            {"title": "Disney+", "value": 2739},
-            {"title": "Amazon Prime Video", "value": 1024},
-            {"title": "HBO", "value": 49},
-            {"title": "Max", "value": 6783},
-            {"title": "Hulu", "value": 453},
-            {"title": "Peacock", "value": 3353},
-            {"title": "Paramount+", "value": 4330},
-            {"title": "Discovery", "value": 64},
-            {"title": "NBC", "value": 6},
-            {"title": "CBS", "value": 16},
-            {"title": "ABC", "value": 2},
-            {"title": "NHK", "value": 2334},
-            {"title": "TBS", "value": 160},
-            {"title": "Fuji TV", "value": 1},
-            {"title": "TV Asahi", "value": 103},
-            {"title": "TV Tokyo", "value": 98},
-            {"title": "Nippon TV", "value": 57},
-            {"title": "MBS", "value": 94},
-        ]
-        
-        movie_language = [
+        series_language = [
             {"title": "汉语", "value": "zh"},
             {"title": "英语", "value": "en"},
             {"title": "日语", "value": "ja"},
             {"title": "韩语", "value": "ko"},
             {"title": "泰语", "value": "th"},
-            {"title": "印地", "value": "hi"},
             {"title": "德语", "value": "de"},
             {"title": "法语", "value": "fr"},
             {"title": "西语", "value": "es"},
             {"title": "葡语", "value": "pt"},
             {"title": "俄语", "value": "ru"},
             {"title": "意语", "value": "it"},
+            {"title": "荷兰语", "value": "nl"},
+            {"title": "波兰语", "value": "pl"},
+            {"title": "印地语", "value": "hi"},
+            {"title": "土耳其语", "value": "tr"},
+            {"title": "瑞典语", "value": "sv"},
+            {"title": "挪威语", "value": "no"},
+            {"title": "芬兰语", "value": "fi"},
+        ]
+        ## 添加语言
+        movies_language = [
+            {"title": "汉语", "value": "zh"},
+            {"title": "英语", "value": "en"},
+            {"title": "日语", "value": "ja"},
+            {"title": "韩语", "value": "ko"},
+            {"title": "泰语", "value": "th"},
+            {"title": "德语", "value": "de"},
+            {"title": "法语", "value": "fr"},
+            {"title": "西语", "value": "es"},
+            {"title": "葡语", "value": "pt"},
+            {"title": "俄语", "value": "ru"},
+            {"title": "意语", "value": "it"},
+            {"title": "荷兰语", "value": "nl"},
+            {"title": "波兰语", "value": "pl"},
+            {"title": "印地语", "value": "hi"},
+            {"title": "土耳其语", "value": "tr"},
+            {"title": "瑞典语", "value": "sv"},
+            {"title": "挪威语", "value": "no"},
+            {"title": "芬兰语", "value": "fi"},
         ]
 
         return [
@@ -299,9 +296,9 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                                 "props": {
                                     "chips": True,
                                     "multiple": True,
-                                    "model": "push_category",
-                                    "label": "剧集平台",
-                                    "items": option_category,
+                                    "model": "push_series",
+                                    "label": "剧集语言",
+                                    "items": series_language,
                                 },
                             }
                         ],
@@ -317,7 +314,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                                     "multiple": True,
                                     "model": "push_movie",
                                     "label": "电影语言",
-                                    "items": movie_language,
+                                    "items": movies_language,
                                 },
                             }
                         ],
@@ -332,7 +329,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             "removeNoCoverMovies": True,
             "movie_Chinese_Title": True,
             "series_Chinese_Title": True,
-            "push_category": [],
+            "push_series": [],
             "push_movie": [],
         }
 
@@ -346,10 +343,9 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
         items = self.get_series_source()
         if items:
             for item in items:
-                network_id = item.get("network_id")
                 original_language = item.get("original_language")
 
-                if network_id is not None and int(network_id) not in self._push_category:
+                if original_language is not None and original_language not in self._push_series:
                     continue
 
                 if self._removeNoCoverSeries == True and item.get("backdrop_path") is None:

@@ -20,7 +20,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.3.2"
+    plugin_version = "0.3.3"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -40,7 +40,9 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     _enabled = False
     _onlyonce = False
     _cron = None
-    _remove_noCover = False
+    _removeNoCoverSeries = False
+    _removeNoCoverMovies = False
+    _series_Chinese_Title = False
     _movie_Chinese_Title = False
     _push_category: list = []
     _push_movie: list = []
@@ -50,8 +52,10 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             self._enabled = config.get("enabled")
             self._onlyonce = config.get("onlyonce")
             self._cron = config.get("cron")
-            self._remove_noCover = config.get("remove_noCover") or False
+            self._removeNoCoverSeries = config.get("removeNoCoverSeries") or False
+            self._removeNoCoverMovies = config.get("removeNoCoverMovies") or False
             self._movie_Chinese_Title = config.get("movie_Chinese_Title") or False
+            self._series_Chinese_Title = config.get("series_Chinese_Title") or False
             self._push_category = config.get("push_category") or []
             self._push_movie = config.get("push_movie") or []
         # 停止现有任务
@@ -85,8 +89,10 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                 "enabled": self._enabled,
                 "onlyonce": self._onlyonce,
                 "cron": self._cron,
-                "remove_noCover": self._remove_noCover,
+                "removeNoCoverSeries": self._removeNoCoverSeries,
+                "removeNoCoverMovies": self._removeNoCoverMovies,
                 "movie_Chinese_Title": self._movie_Chinese_Title,
+                "series_Chinese_Title": self._series_Chinese_Title,
                 "push_category": self._push_category,
                 "push_movie" : self._push_movie,
             }
@@ -200,8 +206,8 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                                     {
                                         "component": "VSwitch",
                                         "props": {
-                                            "model": "onlyonce",
-                                            "label": "立即运行一次",
+                                            "model": "removeNoCoverSeries",
+                                            "label": "仅横向背景图剧集",
                                         },
                                     }
                                 ],
@@ -213,8 +219,21 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                                     {
                                         "component": "VSwitch",
                                         "props": {
-                                            "model": "remove_noCover",
-                                            "label": "仅返回横向背景图",
+                                            "model": "removeNoCoverMovies",
+                                            "label": "仅横向背景图电影",
+                                        },
+                                    }
+                                ],
+                            },
+                            {
+                                "component": "VCol",
+                                "props": {"cols": 12, "md": 4},
+                                "content": [
+                                    {
+                                        "component": "VSwitch",
+                                        "props": {
+                                            "model": "series_Chinese_Title",
+                                            "label": "仅中文标题剧集",
                                         },
                                     }
                                 ],
@@ -227,7 +246,20 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                                         "component": "VSwitch",
                                         "props": {
                                             "model": "movie_Chinese_Title",
-                                            "label": "仅返回中文标题电影",
+                                            "label": "仅中文标题电影",
+                                        },
+                                    }
+                                ],
+                            },
+                            {
+                                "component": "VCol",
+                                "props": {"cols": 12, "md": 4},
+                                "content": [
+                                    {
+                                        "component": "VSwitch",
+                                        "props": {
+                                            "model": "onlyonce",
+                                            "label": "立即运行一次",
                                         },
                                     }
                                 ],
@@ -236,12 +268,12 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                     }
                 ],
             },
-            {
+                        {
                 "component": "VRow",
                 "content": [
                     {
                         "component": "VCol",
-                        "props": {"cols": 12, "md": 4},
+                        "props": {"cols": 12, "md": 6},
                         "content": [
                             {
                                 "component": "VTextField",
@@ -253,9 +285,14 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                             }
                         ],
                     },
+                ],
+            },
+            {
+                "component": "VRow",
+                "content": [
                     {
                         "component": "VCol",
-                        "props": {"cols": 12, "md": 4},
+                        "props": {"cols": 12, "md": 6},
                         "content": [
                             {
                                 "component": "VSelect",
@@ -271,7 +308,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                     },
                     {
                         "component": "VCol",
-                        "props": {"cols": 12, "md": 4},
+                        "props": {"cols": 12, "md": 6},
                         "content": [
                             {
                                 "component": "VSelect",
@@ -291,8 +328,10 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
             "enabled": False,
             "onlyonce": False,
             "cron": "",
-            "remove_noCover": True,
+            "removeNoCoverSeries": True,
+            "removeNoCoverMovies": True,
             "movie_Chinese_Title": True,
+            "series_Chinese_Title": True,
             "push_category": [],
             "push_movie": [],
         }
@@ -308,16 +347,21 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
         if items:
             for item in items:
                 network_id = item.get("network_id")
+                original_language = item.get("original_language")
 
                 if network_id is not None and int(network_id) not in self._push_category:
                     continue
 
-                if self._remove_noCover == True and item.get("backdrop_path") is None:
+                if self._removeNoCoverSeries == True and item.get("backdrop_path") is None:
+                    continue
+                
+                if self._series_Chinese_Title == True and item.get("name") == item.get("original_name") and original_language != "zh":
                     continue
 
                 imgage_base = "https://image.tmdb.org/t/p/w1280"
                 image_name = item.get("backdrop_path") or item.get("poster_path")
                 if not image_name:
+                    logger.info("不含封面图，跳过处理",item.get("name"))
                     continue
                 image_url = imgage_base + image_name
 
@@ -326,7 +370,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                     text=(
                         f"名称: {item.get('name') or item.get('original_name', '')}\n"
                         f"类型: {'剧集'}\n"
-                        f"语言: {item.get('original_language')}\n"
+                        f"语言: {item.get('original_language_zh')}\n"
                         + (
                             f"地区: {', '.join([str(origin_country) for origin_country in item.get('origin_country', [])])}\n"
                             if item.get("origin_country")
@@ -347,7 +391,8 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                     image=image_url,
                 )
         else:
-            logger.info("未获取到剧集数据，跳过处理")
+            logger.info("未获取到今日剧集数据，跳过处理")
+            
         items = self.get_movies_source()
         if items:
             for item in items:
@@ -359,12 +404,13 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                 if original_language is not None and original_language not in self._push_movie:
                     continue
 
-                if self._remove_noCover == True and item.get("backdrop_path") is None:
+                if self._removeNoCoverMovies == True and item.get("backdrop_path") is None:
                     continue
 
                 imgage_base = "https://image.tmdb.org/t/p/w1280"
                 image_name = item.get("backdrop_path") or item.get("poster_path")
                 if not image_name:
+                    logger.info("不含封面图，跳过处理",item.get("title"))
                     continue
                 image_url = imgage_base + image_name
                 
@@ -389,7 +435,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                     image=image_url,
                 )
         else:
-            logger.info("未获取到电影数据，跳过处理")
+            logger.info("未获取到今日电影数据，跳过处理")
 
     def clean_spaces(self, text):
         text = text.strip()

@@ -23,7 +23,7 @@ class DailyReleasePush(_PluginBase):
     # 插件图标
     plugin_icon = "statistic.png"
     # 插件版本
-    plugin_version = "0.3.6"
+    plugin_version = "0.3.7"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -263,7 +263,9 @@ class DailyReleasePush(_PluginBase):
             ):
                 continue
 
-            if item["poster_url"].startswith("https://img.huo720.com/files/movie-default"):
+            if item["poster_url"].startswith(
+                "https://img.huo720.com/files/movie-default"
+            ):
                 continue
 
             total_value = sum(self._push_category)
@@ -272,14 +274,21 @@ class DailyReleasePush(_PluginBase):
                 total_value == 2 and item.get("category") == "电视"
             ):
                 continue
+            title = item.get("title", "")
+            english_title = item.get("english_title", "")
+            cleaned_english_title = re.sub(r"\(\d{4}\)", "", english_title).strip()
 
+            if title == cleaned_english_title:
+                name = f"名称: {title}\n"
+            else:
+                name = f"名称: {title} ({cleaned_english_title})\n"
             self.post_message(
                 title="【今日上映】",
                 text=(
-                    f"名称: {item.get('title', '')} ({item.get('english_title', '')})\n"
-                    f"类型: {item.get('category', '')}\n"
-                    f"日期: {item.get('date', '')}\n"
-                    f"国家: {item.get('country', '')}\n"
+                    name
+                    + f"类型: {item.get('category', '')}\n"
+                    + f"日期: {item.get('date', '')}\n"
+                    + f"地区: {item.get('country', '')}\n"
                     + (
                         f"标签: {', '.join(item.get('genres', []))}\n"
                         if item.get("genres")

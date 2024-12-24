@@ -17,5 +17,12 @@
         "version": "0.4.2",
         "author": "plsy1",
         "level": 1
+    },
+    "yysubDailyReleasePush": {
+        "name": "YYSUB今日上映",
+        "description": "推送今日上映的美剧信息。",
+        "version": "0.0.1",
+        "author": "plsy1",
+        "level": 1
     }
 }

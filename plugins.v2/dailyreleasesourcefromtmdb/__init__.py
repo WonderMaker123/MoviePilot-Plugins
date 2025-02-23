@@ -10,6 +10,7 @@ from app.core.config import settings
 from app.log import logger
 from app.plugins import _PluginBase
 from app.utils.http import RequestUtils
+from app.schemas import NotificationType
 
 
 class dailyReleaseSourceFromTMDB(_PluginBase):
@@ -20,7 +21,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
     # 插件图标
     plugin_icon = "https://raw.githubusercontent.com/plsy1/MoviePilot-Plugins/refs/heads/main/icons/tmdb.webp"
     # 插件版本
-    plugin_version = "0.4.2"
+    plugin_version = "0.4.3"
     # 插件作者
     plugin_author = "plsy1"
     # 作者主页
@@ -482,6 +483,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                     image_url = image_base + image_name
 
                 self.post_message(
+                    mtype=NotificationType.Other,
                     title="【今日上映】",
                     text=(
                         f"名称: {item.get('name') or item.get('original_name', '')}\n"
@@ -504,7 +506,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                             else ""
                         )
                     ),
-                    image=image_url,
+                    image=image_url
                 )
         else:
             logger.info("未获取到今日剧集数据，跳过处理")
@@ -537,6 +539,7 @@ class dailyReleaseSourceFromTMDB(_PluginBase):
                     image_url = image_base + image_name
                 
                 self.post_message(
+                    mtype=NotificationType.Other,
                     title="【今日上映】",
                     text=(
                         f"名称: {item.get('title') or item.get('original_title', '')}\n"
